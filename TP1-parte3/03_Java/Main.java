@@ -1,28 +1,43 @@
 import java.util.Scanner;
 
 
-public class Main {
-    public static int vueltas = 1;
-    public static void main(String[] args) {
+public class Main 
+{
+    /* Constantes */
+    private static final String MAN = "H";
+    private static final String WOMAN = "M";
+
+    /* Variables comunes - no es necesario sincronizar, ya que los hilos no lo tocan */
+    public static int access_counter = 1;
+    public static void main(String[] args) 
+    {
+        System.out.println("Este programa simula el acceso a un baño donde solo hombres entran o solo mujeres.");
+        System.out.println("Ingrese 'H' para simular el ingreso de un hombre");
+        System.out.println("Ingrese 'M' para simular el ingreso de una mujer\nPara finalizar, ingrese 'salir'");
 
         Scanner scanner = new Scanner(System.in);
-        int  i = 0;
-        while (true) {
+        int i = 1;
 
+        while (true) 
+        {
             System.out.println("'H' , 'M' o 'salir':");
             String input = scanner.nextLine();
             
-            if (input.equals("H")) {
-                Thread acceso_hombre = new Thread(new Bath("H", i));
-                acceso_hombre.start();
+            if (input.equals(MAN)) 
+            {
+                Thread man_access = new Thread(new Bath(MAN, i));
+                man_access.start();
                 i++;
-            } else if (input.equals("M")) {
-                Thread acceso_mujer = new Thread(new Bath("M", i));
-                acceso_mujer.start();
+            } else if (input.equals(WOMAN)) 
+            {
+                Thread woman_access = new Thread(new Bath(WOMAN, i));
+                woman_access.start();
                 i++;
-            } else if (input.equals("salir")) {
+            } else if (input.equals("salir")) 
+            {
                 break;
-            } else {
+            } else 
+            {
                 System.out.println("Entrada no valida.");
             }
         }
@@ -30,29 +45,44 @@ public class Main {
         scanner.close();
     }
 
-    /// Este seria el recurso compartido
-    public static synchronized void actualizar_pantalla(String genero){
-        int contador = 0;
-        String str = "Baño: ";
+    /* Este seria el recurso compartido */
+    public static synchronized void update_screen()
+    {
+        int counter = 0;
+        String gender = "";
+        String out = "Baño: ";
         System.out.println();
-        System.out.println("=====================" + Main.vueltas + "=====================");
-        if (genero.equals("H")) {
-            contador = Bath.contador_hombres;
-        } else{
-            contador = Bath.contador_mujeres;
+        System.out.println("=====================" + Main.access_counter + "=====================");
+
+        int man_counter = Bath.get_men_counter();
+        int woman_counter = Bath.get_women_counter();
+
+        counter = man_counter != 0 ? man_counter : woman_counter;
+        gender = man_counter !=0 ? MAN : WOMAN;
+
+        for(int i = 0; i < counter; i++) 
+        {
+            out += gender + " ";
         }
-        for(int i = 0; i < contador; i++) {
-            str += genero + " ";
-        }
-        System.out.println(str);
+        System.out.println(out);
         System.out.println("=====================");
-        Main.vueltas++;
+        Main.access_counter++;
     }
 
-  
+    public static synchronized void enter_to_bath(int number)
+    {
+        System.out.println("Persona: " + number + " ingresando");
+    }
 
-    
+    public static synchronized void out_of_bath(int number)
+    {
+        System.out.println("Persona: " + number + " saliendo");
+    }
 
+    public static synchronized void waiting(String gender, int number)
+    {
+        System.out.println("Persona: " + number + "de genero: " + gender + " esta esperando");
+    }
 }
 
 
