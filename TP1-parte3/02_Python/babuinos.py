@@ -18,11 +18,9 @@ def babuinos(N, M):
         babuinos.append(threading.Thread(target=cruzar_soga, args=(
             semaforo, mutex_izq, mutex_der, False)))
 
-    # No necesariamente arrancan todos los que quieren ir a la izquierda y luego todos los que quieren ir a la derecha
     random.shuffle(babuinos)
     for babuino in babuinos:
         babuino.start()
-        # No todos los babuinos empiezan al mismo tiempo
         time.sleep(random.randint(1, 2))
 
 
@@ -47,7 +45,6 @@ def cruzar_soga(semaforo, mutex_izq, mutex_der,  es_izquierda):
 
 def cruzar(st):
     print(st)
-    # No todos los babuinos cruzan a la misma velocidad
     time.sleep(random.randint(1, 2))
 
 

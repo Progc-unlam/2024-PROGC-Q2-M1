@@ -32,23 +32,21 @@ if __name__ == "__main__":
 
         new_proc = os.fork()
         if new_proc != 0:
-            # Seguimos en el padre (A)
-            os.wait()  # Que espere a los hijos
+            os.wait()  
         else:
-            # Estamos en el hijo (B)
+            
             print_proc("B")
 
             new_proc = os.fork()
             if new_proc == 0:
-                # Estamos en el 1er hijo (C)
+                
                 print_proc("C")
 
                 new_proc = os.fork()
                 if new_proc != 0:
-                    # Seguimos en el padre (C)
                     os.wait()
                 else:
-                    # Estamos en el hijo (E)
+                    
                     print_proc("E")
 
                     new_proc = os.fork()
@@ -62,13 +60,13 @@ if __name__ == "__main__":
                         else:
                             create_leaf("I")
             else:
-                # Seguimos en el padre (B)
+                
                 new_proc = os.fork()
                 if new_proc != 0:
-                    # Seguimos en el padre (B)
+                    
                     os.wait()
                 else:
-                    # Estamos en el 2do hijo (D)
+                    
                     print_proc("D")
 
                     new_proc = os.fork()
