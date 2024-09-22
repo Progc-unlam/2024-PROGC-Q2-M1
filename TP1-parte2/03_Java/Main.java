@@ -10,7 +10,8 @@ public class Main
 	public static void main(String[] args) 
     {
         
-        if (!validate_parameters(args)) {
+        if (!validate_parameters(args)) 
+        {
             return;
         }
         
@@ -47,7 +48,8 @@ public class Main
         }
         
         int total_threads;
-        try{
+        try
+        {
             total_threads = Integer.parseInt(parameters[1]);
         } 
         catch (NumberFormatException e) 

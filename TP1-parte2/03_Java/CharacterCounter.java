@@ -1,6 +1,7 @@
 import java.util.List;
 
-public class CharacterCounter implements Runnable {
+public class CharacterCounter implements Runnable 
+{
 	private static final int TIME_SLEEP = 1000;
 	private List<String> lines;
 	private int rp;
@@ -20,7 +21,8 @@ public class CharacterCounter implements Runnable {
 		return this.rp;
 	}
 
-	public void count_characters() {
+	public void count_characters() 
+	{
 		int count = 0;
 		String line = "";
 
