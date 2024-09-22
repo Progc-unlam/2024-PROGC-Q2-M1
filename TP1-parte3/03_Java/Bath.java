@@ -1,173 +1,228 @@
 import java.util.concurrent.Semaphore;
 
-public class Bath implements Runnable {
-
-    // ERROR NO VUELVEN A SUBIR EL VALOR DEL SEMAFORO SEM_ACCESO_BANO
-    // solucion: no hacerlo estatico, posible deadlock al usar syncro
-
-    // ERROR: ejecutar H-H-M-M con cap=2
-    // al no usar semaforo y solo el while, hace que solo ejecute 1 M
-    // TODO: solucion: el while tiene que ser un semaforo pero nose 
+public class Bath implements Runnable 
+{
+    // Constantes
     private static final int TIME_SLEEP = 3000;
-    private static final int CAP_BANO = 2;
+    private static final int BATH_CAPACITY = 2;
+    private static final String MAN = "H";
+    private static final String WOMAN = "M";
+    private static final String DEFAULT_GENDER = "S";
 
+    // Recursos propios de cada persona
+    private String gender;
+    private int number;
 
-    public static int contador_mujeres = 0;
-    public static int contador_hombres = 0;
+    // Recursos compartidos
+    public static int women_counter = 0;
+    public static int men_counter = 0;
     
-    public static int espera_mujeres = 0;
-    public static int espera_hombres = 0;
+    public static int waiting_women = 0;
+    public static int waiting_men = 0;
 
-    public static String genero_actual = "S";
+    public static String current_gender = DEFAULT_GENDER;
     
-    public static Semaphore sem_genero_h = new Semaphore(0);
-    public static Semaphore sem_genero_m = new Semaphore(0);
-    public static Semaphore sem_acceso_bano = new Semaphore(CAP_BANO);
+    public static Semaphore sem_gender_man = new Semaphore(0);
+    public static Semaphore sem_gender_woman = new Semaphore(0);
+    public static Semaphore sem_access_bath = new Semaphore(BATH_CAPACITY);
 
-    private String genero;
-    private int nombre;
-
-    public Bath(String genero, int nombre ){
-        this.genero = genero;
-        this.nombre = nombre;
-
+    public Bath(String gender, int number)
+    {
+        this.gender = gender;
+        this.number = number;
     }
 
-    public void usarBano() {
-
-        if (genero_actual.equals("S")){ //TODO:sincronizar
-            set_genero(this.genero);
+    public void usarBano() 
+    {
+        if (Bath.get_current_gender().equals(DEFAULT_GENDER))
+        { 
+            Bath.set_current_gender(this.gender);
         }
 
-        /// si el que entra, no es del genero correcto, entonces no le dejo pasar
-
-        if(!genero_actual.equals(this.genero)){
-
-            if (this.genero.equals("H")){   /// la fila es de mujeres y entra un hombre
-                P("sem_genero_h");
-                set_genero("H");
-            } else {        
-                System.out.println("entro mujer a espera");    
-                espera_mujeres++;    
-                P("sem_genero_m");          /// problema si vienen varias mujeres, y quedan bloqueadas aca, entonces rompe porque solo se libera 1 vez al llegar hombres a 0
-                                                /// contador de mujeres en espera que se ejecute cuando se vacia, como mucho tiene que ser la cap del bano
-                                                    //// SOLUCIONADO: ahora el problema es que si ejecuta dos veces M en espera, al liberar borra todos POSIBLMENTE CORRECTO YA QUE DEPENDE DE LA VELOCIDAD EN QUE INGRESEN, PUEDEN SALIR AL MISMO TIEMPO
-                System.out.println("mujer salio de espera"); 
-                set_genero("M");
+        /// Si el que entra, no es del genero correcto, entonces no le dejo pasar
+        if(!get_current_gender().equals(this.gender))
+        {
+            /// La fila es de mujeres y entra un hombre
+            if (this.gender.equals(MAN))
+            {   
+                Main.waiting(MAN, this.number);
+                Bath.increment_waiting_men();
+                P("sem_gender_man");
+                Bath.set_current_gender(MAN);
+            } else 
+            {        
+                Main.waiting(WOMAN, this.number);
+                Bath.increment_waiting_women();       
+                P("sem_gender_woman");        
+                Bath.set_current_gender(WOMAN);
             }
         }
         P("acceso_bano");
-
-        if (this.genero.equals("H")) {
-            incrementar_contador_hombres();
-        } else {
-            incrementar_contador_mujeres();
+        Main.enter_to_bath(this.number);
+        if (this.gender.equals(MAN)) 
+        {
+            Bath.increment_men_counter();
+        } else 
+        {
+            Bath.increment_women_counter();
         }
-
         
-        try {
-            Thread.sleep(TIME_SLEEP); // Simula el tiempo que el hilo esta usando el baño ////
-
-        } catch (InterruptedException e) {
+        try 
+        {
+            // Simula el tiempo que el hilo esta usando el baño
+            Thread.sleep(TIME_SLEEP); 
+        
+        } catch (InterruptedException e) 
+        {
             e.printStackTrace();
         }
-
-        if (this.genero.equals("H")) {
-            decrementar_contador_hombres();
-        } else {
-            decrementar_contador_mujeres();
-        }
-
        
-
-        // System.out.println("Salio del bano: " + this.nombre);
-        
-        V("acceso_bano");
-        System.out.println("libero bano");
-        if (genero_actual.equals("H") && contador_hombres == 0){    // si la fila es de hombres y se vacio, entonces permito entrar mujeres|hombres y el genero vuelve a default
-           
-            System.out.println("espera mujeres:" + espera_mujeres);
-            for (int i = 0; i < espera_mujeres; i++){
-                V("sem_genero_m");
-            }
-            espera_mujeres = 0;
-            set_genero("S");
-        } else if (genero_actual.equals("M") && contador_mujeres == 0) {
-            
-            for (int i = 0; i < espera_hombres; i++){
-                V("sem_genero_h");
-            }
-            
-            espera_hombres = 0;
-            
-            set_genero("S");
+        Main.out_of_bath(this.number);
+        if (this.gender.equals(MAN)) 
+        {
+            Bath.decrement_men_counter();
+        } else 
+        { 
+            Bath.decrement_women_counter();
         }
-
+        V("acceso_bano");
+        // Si la fila es de hombres y se vacio, entonces permito entrar mujeres|hombres y el genero vuelve a default
+        if (Bath.get_current_gender().equals(MAN) && get_men_counter() == 0)
+        {    
+            for (int i = 0; i < Bath.get_waiting_women(); i++)
+            {
+                V("sem_gender_woman");
+            }
+            Bath.reset_waiting_women();
+            Bath.set_current_gender("S");
+        } else if (Bath.get_current_gender().equals(WOMAN) && get_women_counter() == 0) 
+        {
+            for (int i = 0; i < Bath.get_waiting_men(); i++)
+            {
+                V("sem_gender_man");
+            }
+            Bath.reset_waiting_men();
+            Bath.set_current_gender("S");
+        }
+        
     }
 
     @Override
-    public void run() {
+    public void run() 
+    {
         usarBano();
     }
 
-    public void P(String name){
+    public void P(String name)
+    {
         try {
-            if (name.equals("sem_genero_h")) {
-                sem_genero_h.acquire();
+            if (name.equals("sem_gender_man")) 
+            {
+                sem_gender_man.acquire();
             }
-            else if (name.equals("sem_genero_m")){
-                sem_genero_m.acquire();
-            } else{
-                sem_acceso_bano.acquire();
+            else if (name.equals("sem_gender_woman"))
+            {
+                sem_gender_woman.acquire();
+            } else
+            {
+                sem_access_bath.acquire();
             }
             
-        } catch(InterruptedException e){
+        } catch(InterruptedException e)
+        {
             e.printStackTrace();
         }
         
     }
 
-    public void V(String name){
-        if (name.equals("sem_genero_h")) {
-            sem_genero_h.release();
+    public void V(String name)
+    {
+        if (name.equals("sem_gender_man")) 
+        {
+            sem_gender_man.release();
         }
-        else if (name.equals("sem_genero_m")){
-            sem_genero_m.release();
-        } else{
-            sem_acceso_bano.release();
+        else if (name.equals("sem_gender_woman"))
+        {
+            sem_gender_woman.release();
+        } else
+        {
+            sem_access_bath.release();
         }
     }
 
-    public static synchronized int get_contador_hombres(){
-        return contador_hombres;
-    }
-    public static synchronized void incrementar_contador_hombres(){
-        contador_hombres++;
-        Main.actualizar_pantalla("H");
-    }
-    // syncro solo se hace a nivel objeto, pero si se utiliza static, entonces es a nivel clase
-    public static synchronized void decrementar_contador_hombres(){
-        contador_hombres--;
-        Main.actualizar_pantalla("H");
+
+    public static synchronized void increment_waiting_women()
+    {
+        Bath.waiting_women++;
     }
 
-    public static synchronized int get_contador_mujeres(){
-        return contador_mujeres;
+    public static synchronized void reset_waiting_women()
+    {
+        Bath.waiting_women = 0;
     }
-    public static synchronized void incrementar_contador_mujeres(){
-        contador_mujeres++;
-        Main.actualizar_pantalla("M");
+
+    public static synchronized void increment_waiting_men()
+    {
+        Bath.waiting_men++;
     }
-    public static synchronized void decrementar_contador_mujeres(){
-        contador_mujeres--;
-        Main.actualizar_pantalla("M");
+
+    public static synchronized void reset_waiting_men()
+    {
+        Bath.waiting_men = 0;
+    }
+
+    public static synchronized int get_waiting_men()
+    {
+        return Bath.waiting_men;
+    }
+
+    public static synchronized int get_waiting_women()
+    {
+        return Bath.waiting_women;
+    }
+
+    public static synchronized int get_men_counter()
+    {
+        return men_counter;
+    }
+
+    public static synchronized void increment_men_counter()
+    {
+        men_counter++;
+        Main.update_screen();
     }
     
-    public static synchronized void set_genero(String genero) {
-        genero_actual = genero;
+    public static synchronized void decrement_men_counter()
+    {
+        men_counter--;
+        Main.update_screen();
     }
-    public static synchronized String get_genero() {
-        return genero_actual;
+
+    public static synchronized int get_women_counter()
+    {
+        return women_counter;
+    }
+
+    public static synchronized void increment_women_counter()
+    {
+        women_counter++;
+        Main.update_screen();
+    }
+
+    public static synchronized void decrement_women_counter()
+    {
+        women_counter--;
+        Main.update_screen();
+    }
+    
+    public static synchronized void set_current_gender(String gender) 
+    {
+        current_gender = gender;
+    }
+
+    public static synchronized String get_current_gender() 
+    {
+        return current_gender;
     }
 }
 
