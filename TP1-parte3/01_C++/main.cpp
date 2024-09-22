@@ -1,10 +1,11 @@
 #include <fcntl.h>
 #include <semaphore.h>
-
+#include <unistd.h>
 #include <iostream>
 #include <list>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 using namespace std;
 
@@ -15,7 +16,9 @@ using namespace std;
 
 int nClients = 0;
 vector<sem_t *> semaphores;
-sem_t *reponer;
+sem_t *reponerS;
+mutex gondolaAccesMutex;
+int productCount=10;
 
 int parametersValidation(int nParamters, char const *paramters[]);
 list<thread> createRestockers(int nRestockers);
@@ -34,15 +37,15 @@ int main(int argc, char const *argv[])
   cout << "Good init" << endl;
   cout << "N clients - " << nClients << endl;
 
-  reponer = sem_open("reponer", O_CREAT, 0600, 0);
+  reponerS = sem_open("reponer", O_CREAT, 0600, 0);
 
   list<thread> listRestockers = createRestockers((NRESTOKERS));
 
   cout << "No empieza aun" << endl;
   sleep(5);
-  sem_post(reponer);
+  sem_post(reponerS);
   sleep(15);
-  sem_post(reponer);
+  sem_post(reponerS);
 
   for (auto &restocker : listRestockers)
   {
@@ -79,7 +82,7 @@ list<thread> createRestockers(int nRestockers)
   for (int i = 0; i < nRestockers; i++)
   {
     string nameSemaphore = "Número: " + std::to_string(i);
-    semaphores.push_back(sem_open(nameSemaphore.c_str(), O_CREAT, 0600, i==0=?1:0));
+    semaphores.push_back(sem_open(nameSemaphore.c_str(), O_CREAT, 0600, i==0?1:0));
   }
   for (int i = 0; i < nRestockers; i++)
   {
@@ -92,7 +95,12 @@ list<thread> createRestockers(int nRestockers)
 void reponer(int numb_restocker,sem_t *myInit, sem_t *nextRepo)
 {
   sem_wait(myInit);
-  sem_wait(reponer)
+  sem_wait(reponerS);
+  gondolaAccesMutex.lock();
+  productCount+=10;
   cout << numb_restocker << " XD" << endl;
+  cout << productCount << endl;
+  gondolaAccesMutex.unlock();
   sem_post(nextRepo);
+
 }
