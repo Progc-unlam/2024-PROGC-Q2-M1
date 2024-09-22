@@ -16,7 +16,8 @@ public class MainProcess
 	    if (args.length == 0) 
 		{
 	    	processName = "A";
-	    } else 
+	    } 
+		else 
 		{
 	    	processName = args[0];
 	    }
@@ -52,7 +53,8 @@ public class MainProcess
 	    Thread.sleep(TIME_VERIFICATION);	
 		
 	    
-	    for(Process child : childs) {
+	    for(Process child : childs) 
+		{
 	    	child.waitFor();  
 
 	    }

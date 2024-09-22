@@ -49,7 +49,8 @@ public class Main
         int total_threads;
         try{
             total_threads = Integer.parseInt(parameters[1]);
-        } catch (NumberFormatException e) 
+        } 
+        catch (NumberFormatException e) 
         {
             System.out.println("El 2do parametro tiene que ser un numero.");
             return false;
@@ -86,7 +87,8 @@ public class Main
 		} catch( Exception e)
         {
 			e.printStackTrace();
-		} finally 
+		} 
+        finally 
         {
 			sc.close();
 		}
@@ -125,7 +127,8 @@ public class Main
             {
                 threads[i].join();
             }
-        } catch (InterruptedException e) 
+        } 
+        catch (InterruptedException e) 
         {
             e.printStackTrace();
         }

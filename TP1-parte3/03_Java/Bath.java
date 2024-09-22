@@ -49,7 +49,8 @@ public class Bath implements Runnable
                 Bath.increment_waiting_men();
                 P("sem_gender_man");
                 Bath.set_current_gender(MAN);
-            } else 
+            } 
+            else 
             {        
                 Main.waiting(WOMAN, this.number);
                 Bath.increment_waiting_women();       
@@ -72,7 +73,8 @@ public class Bath implements Runnable
            
             Thread.sleep(TIME_SLEEP); 
         
-        } catch (InterruptedException e) 
+        } 
+        catch (InterruptedException e) 
         {
             e.printStackTrace();
         }
@@ -81,7 +83,8 @@ public class Bath implements Runnable
         if (this.gender.equals(MAN)) 
         {
             Bath.decrement_men_counter();
-        } else 
+        } 
+        else 
         { 
             Bath.decrement_women_counter();
         }
@@ -95,7 +98,8 @@ public class Bath implements Runnable
             }
             Bath.reset_waiting_women();
             Bath.set_current_gender("S");
-        } else if (Bath.get_current_gender().equals(WOMAN) && get_women_counter() == 0) 
+        } 
+        else if (Bath.get_current_gender().equals(WOMAN) && get_women_counter() == 0) 
         {
             for (int i = 0; i < Bath.get_waiting_men(); i++)
             {
@@ -115,7 +119,8 @@ public class Bath implements Runnable
 
     public void P(String name)
     {
-        try {
+        try 
+        {
             if (name.equals("sem_gender_man")) 
             {
                 sem_gender_man.acquire();
@@ -123,7 +128,8 @@ public class Bath implements Runnable
             else if (name.equals("sem_gender_woman"))
             {
                 sem_gender_woman.acquire();
-            } else
+            } 
+            else
             {
                 sem_access_bath.acquire();
             }
@@ -144,7 +150,8 @@ public class Bath implements Runnable
         else if (name.equals("sem_gender_woman"))
         {
             sem_gender_woman.release();
-        } else
+        } 
+        else
         {
             sem_access_bath.release();
         }

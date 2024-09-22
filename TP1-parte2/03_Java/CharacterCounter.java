@@ -7,14 +7,16 @@ public class CharacterCounter implements Runnable {
 	private int start;
 	private int end;
 	
-	public CharacterCounter(List<String> lines, int start, int end) {
+	public CharacterCounter(List<String> lines, int start, int end) 
+	{
 		this.rp = 0;
 		this.lines = lines;
 		this.start = start;
 		this.end = end;
 	}
 	
-	public int getRp(){
+	public int getRp()
+	{
 		return this.rp;
 	}
 
@@ -23,16 +25,20 @@ public class CharacterCounter implements Runnable {
 		String line = "";
 
 		
-		for (int i = this.start; i < this.end; i++){	
+		for (int i = this.start; i < this.end; i++)
+		{	
 			line = this.lines.get(i);
 			
-			for (int j = 0; j < line.length(); j++){		
+			for (int j = 0; j < line.length(); j++)
+			{		
 				count++;
 			}
 		}
-		try{
+		try
+		{
 			Thread.sleep(TIME_SLEEP);
-		} catch(InterruptedException e){
+		} catch(InterruptedException e)
+		{
 			e.printStackTrace();
 		}
 		
@@ -40,7 +46,8 @@ public class CharacterCounter implements Runnable {
 	}
 
 	@Override
-	public void run(){
+	public void run()
+	{
 		count_characters();
 		
 	}

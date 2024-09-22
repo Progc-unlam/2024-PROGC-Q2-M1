@@ -28,15 +28,18 @@ public class Main
                 Thread man_access = new Thread(new Bath(MAN, i));
                 man_access.start();
                 i++;
-            } else if (input.equals(WOMAN)) 
+            } 
+            else if (input.equals(WOMAN)) 
             {
                 Thread woman_access = new Thread(new Bath(WOMAN, i));
                 woman_access.start();
                 i++;
-            } else if (input.equals("salir")) 
+            } 
+            else if (input.equals("salir")) 
             {
                 break;
-            } else 
+            } 
+            else 
             {
                 System.out.println("Entrada no valida.");
             }
