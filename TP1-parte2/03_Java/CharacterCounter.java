@@ -22,9 +22,11 @@ public class CharacterCounter implements Runnable {
 		int count = 0;
 		String line = "";
 
-		for (int i = this.start; i < this.end; i++){	// Itero lineas
+		// Itero lineas
+		for (int i = this.start; i < this.end; i++){	
 			line = this.lines.get(i);
-			for (int j = 0; j < line.length(); j++){		// Itero caracteres de la linea
+			// Itero caracteres de la linea
+			for (int j = 0; j < line.length(); j++){		
 				count++;
 			}
 		}

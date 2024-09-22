@@ -5,10 +5,10 @@ import java.io.File;
 
 // hay que compilar javac CharacterCounter.java
 
-public class Main {
-
-    
-	public static void main(String[] args) {
+public class Main 
+{
+	public static void main(String[] args) 
+    {
         /// Valido los parametros
         if (!validate_parameters(args)) {
             return;
@@ -30,24 +30,32 @@ public class Main {
 
         System.out.println("Total: " + rt + " calculado en: " + tt + "ms");
 	}
-    public static boolean validate_parameters(String[] parameters) {
-        if (parameters.length > 2 || parameters.length < 1){
+
+    public static boolean validate_parameters(String[] parameters) 
+    {
+        if (parameters.length > 2 || parameters.length < 1)
+        {
             System.out.println("Cantidad de parametros incorrecto.");
             return false;
         }
+
         File file = new File(parameters[0]);
-        if (!file.exists() || !file.isFile()){
+        if (!file.exists() || !file.isFile())
+        {
             System.out.println("El primer parametro debe ser un archivo.");
             return false;
         }
+        
         int total_threads;
         try{
             total_threads = Integer.parseInt(parameters[1]);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) 
+        {
             System.out.println("El 2do parametro tiene que ser un numero.");
             return false;
         }
-        if (total_threads < 1) {
+        if (total_threads < 1) 
+        {
 			System.out.println("La cantidad de threads tiene que ser igual o mayor a 1.");
 			return false;
 		}
@@ -55,33 +63,42 @@ public class Main {
         return true;
     }
     
-	private static void read_file(String name, List<String> lines) {
+	private static void read_file(String name, List<String> lines) 
+    {
 		File fp = null;
 		Scanner sc = null;
         String line = "";
 
-		try{
+		try
+        {
 			fp = new File(name);
 			sc = new Scanner(fp);
 			
-			while (sc.hasNextLine()) {
+			while (sc.hasNextLine()) 
+            {
 				line = sc.nextLine();
-                if(!line.trim().isEmpty()) {
+                if(!line.trim().isEmpty()) 
+                {
                     lines.add(line);
                 }
 				
 			}
-		} catch( Exception e){
+		} catch( Exception e)
+        {
 			e.printStackTrace();
-		} finally {
+		} finally 
+        {
 			sc.close();
 		}
 	}
-    private static int execute_counter(List<String> lines, int total_threads){
+    private static int execute_counter(List<String> lines, int total_threads)
+    {
         
         int total_lines = lines.size();
 
-        if (total_threads > total_lines) {   // Si la cantidad de hilos es mayor que la cantidad de lineas del archivo, entonces limito los hilos a la cantidad de lineas
+        // Si la cantidad de hilos es mayor que la cantidad de lineas del archivo, entonces limito los hilos a la cantidad de lineas
+        if (total_threads > total_lines) 
+        {   
             total_threads = total_lines;
         }
 		
@@ -91,7 +108,8 @@ public class Main {
 		int lines_per_thread = (total_lines/total_threads);
         int start = 0;
         int end = 0;
-		for (int i = 0; i < total_threads; i++ ) {
+		for (int i = 0; i < total_threads; i++ ) 
+        {
 			start = i * lines_per_thread;
             end = (i == total_threads -1)? total_lines : start + lines_per_thread;
             counters[i] = new CharacterCounter(lines, start, end);
@@ -101,17 +119,21 @@ public class Main {
 		}
 
         /// Libero recursos de los hilos
-        try{
-            for (int i = 0; i < total_threads; i++) {
+        try
+        {
+            for (int i = 0; i < total_threads; i++) 
+            {
                 threads[i].join();
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e) 
+        {
             e.printStackTrace();
         }
         
         /// Conteo final
         int rt = 0;
-        for (CharacterCounter counter : counters) {
+        for (CharacterCounter counter : counters) 
+        {
             rt += counter.getRp();
         }
 
