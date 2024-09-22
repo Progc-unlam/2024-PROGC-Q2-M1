@@ -3,11 +3,11 @@ import java.util.Scanner;
 
 public class Main 
 {
-    // Constantes
+    /* Constantes */
     private static final String MAN = "H";
     private static final String WOMAN = "M";
 
-    // Variables comunes - no es necesario sincronizar, ya que los hilos no lo tocan
+    /* Variables comunes - no es necesario sincronizar, ya que los hilos no lo tocan */
     public static int access_counter = 1;
     public static void main(String[] args) 
     {
@@ -45,7 +45,7 @@ public class Main
         scanner.close();
     }
 
-    /// Este seria el recurso compartido
+    /* Este seria el recurso compartido */
     public static synchronized void update_screen()
     {
         int counter = 0;
