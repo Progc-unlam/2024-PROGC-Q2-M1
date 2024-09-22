@@ -2,18 +2,18 @@ import java.util.concurrent.Semaphore;
 
 public class Bath implements Runnable 
 {
-    /* Constantes */
+    
     private static final int TIME_SLEEP = 3000;
     private static final int BATH_CAPACITY = 2;
     private static final String MAN = "H";
     private static final String WOMAN = "M";
     private static final String DEFAULT_GENDER = "S";
 
-    /* Recursos propios de cada persona */
+    
     private String gender;
     private int number;
 
-    /* Recursos compartidos */
+    
     public static int women_counter = 0;
     public static int men_counter = 0;
     
@@ -39,10 +39,10 @@ public class Bath implements Runnable
             Bath.set_current_gender(this.gender);
         }
 
-        /* Si el que entra, no es del genero correcto, entonces no le dejo pasar */
+    
         if(!get_current_gender().equals(this.gender))
         {
-            /*  La fila es de mujeres y entra un hombre */
+            
             if (this.gender.equals(MAN))
             {   
                 Main.waiting(MAN, this.number);
@@ -69,7 +69,7 @@ public class Bath implements Runnable
         
         try 
         {
-            /* Simula el tiempo que el hilo esta usando el baño */
+           
             Thread.sleep(TIME_SLEEP); 
         
         } catch (InterruptedException e) 
@@ -86,7 +86,7 @@ public class Bath implements Runnable
             Bath.decrement_women_counter();
         }
         V("acceso_bano");
-        /* Si la fila es de hombres y se vacio, entonces permito entrar mujeres|hombres y el genero vuelve a default */
+        
         if (Bath.get_current_gender().equals(MAN) && get_men_counter() == 0)
         {    
             for (int i = 0; i < Bath.get_waiting_women(); i++)

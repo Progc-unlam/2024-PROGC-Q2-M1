@@ -48,10 +48,10 @@ public class MainProcess
 	    	childs.add(createProcess("G"));
 	    } 
 	
-		/* Duerme todos los procesos */
+		
 	    Thread.sleep(TIME_VERIFICATION);	
 		
-	    /* El proceso solo continua si el proceso hijo termina */
+	    
 	    for(Process child : childs) {
 	    	child.waitFor();  
 
