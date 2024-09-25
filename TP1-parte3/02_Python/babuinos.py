@@ -4,19 +4,22 @@ import time
 import random
 
 
+MAX_BABUINOS = 5
+
+
 def babuinos(N, M):
-    semaforo = threading.Semaphore(5)
-    mutex_izq = threading.Lock()
-    mutex_der = threading.Lock()
+    semaforo = threading.Semaphore(MAX_BABUINOS)
+    sem_izq = threading.Semaphore(MAX_BABUINOS)
+    sem_der = threading.Semaphore(MAX_BABUINOS)
     babuinos = []
 
     for _ in range(N):
         babuinos.append(threading.Thread(target=cruzar_soga, args=(
-            semaforo, mutex_izq, mutex_der, True)))
+            semaforo, sem_izq, sem_der, True)))
 
     for _ in range(M):
         babuinos.append(threading.Thread(target=cruzar_soga, args=(
-            semaforo, mutex_izq, mutex_der, False)))
+            semaforo, sem_izq, sem_der, False)))
 
     random.shuffle(babuinos)
     for babuino in babuinos:
@@ -24,22 +27,17 @@ def babuinos(N, M):
         time.sleep(random.randint(1, 2))
 
 
-def cruzar_soga(semaforo, mutex_izq, mutex_der,  es_izquierda):
+def cruzar_soga(semaforo, sem_izq, sem_der,  es_izquierda):
     semaforo.acquire()
-    if es_izquierda and not mutex_der.locked():
-        if not mutex_izq.locked():
-            mutex_izq.acquire()
-            cruzar("Cruza hacia la izquierda")
-            mutex_izq.release()
-        else:
-            cruzar("Cruza hacia la izquierda")
-    elif not mutex_izq.locked():
-        if not mutex_der.locked():
-            mutex_der.acquire()
-            cruzar("Cruza hacia la derecha")
-            mutex_der.release()
-        else:
-            cruzar("Cruza hacia la derecha")
+    if es_izquierda and sem_der._value == MAX_BABUINOS:
+        sem_izq.acquire()
+        cruzar("Cruza hacia la izquierda")
+        sem_izq.release()
+    elif sem_izq._value == MAX_BABUINOS:
+        sem_der.acquire()
+        cruzar("Cruza hacia la derecha")
+        sem_der.release()
+
     semaforo.release()
 
 
@@ -50,7 +48,7 @@ def cruzar(st):
 
 def main():
     if len(sys.argv) != 3:
-        print("""Por favor provea dos argumentos: 
+        print("""Por favor provea dos argumentos:
                 N (babuinos que cruzan de izquierda a derecha)
                 M (babuinos que cruzan de derecha a izquierda)""")
         return
