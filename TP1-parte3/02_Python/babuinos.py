@@ -31,11 +31,11 @@ def cruzar_soga(semaforo, sem_izq, sem_der,  es_izquierda):
     semaforo.acquire()
     if es_izquierda and sem_der._value == MAX_BABUINOS:
         sem_izq.acquire()
-        cruzar("Cruza hacia la izquierda")
+        cruzar("Cruzando hacia la izquierda")
         sem_izq.release()
     elif sem_izq._value == MAX_BABUINOS:
         sem_der.acquire()
-        cruzar("Cruza hacia la derecha")
+        cruzar("Cruzando hacia la derecha")
         sem_der.release()
 
     semaforo.release()
