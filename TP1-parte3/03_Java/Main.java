@@ -69,19 +69,19 @@ public class Main
         Main.access_counter++;
     }
 
-    public static synchronized void enter_to_bath(int number)
+    public static synchronized void enter_bath(int number)
     {
         System.out.println("Persona: " + number + " ingresando");
     }
 
-    public static synchronized void out_of_bath(int number)
+    public static synchronized void leave_bath(int number)
     {
         System.out.println("Persona: " + number + " saliendo");
     }
 
     public static synchronized void waiting(String gender, int number)
     {
-        System.out.println("Persona: " + number + "de genero: " + gender + " esta esperando");
+        System.out.println("Persona: " + number + " de genero: " + gender + " esta esperando");
     }
 }
 
