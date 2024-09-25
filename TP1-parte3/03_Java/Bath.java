@@ -10,11 +10,11 @@ public class Bath implements Runnable
     private static final String WOMAN = "M";
 
 
-    /* Recursos propios de cada persona */
+    
     private String gender;
     private int number;
 
-    /* Recursos compartidos */
+    
     public static int women_counter = 0;
     public static int men_counter = 0;
     public static Semaphore sem_access_bath = new Semaphore(BATH_CAPACITY);

@@ -3,25 +3,26 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.File;
 
-/* hay que compilar javac CharacterCounter.java */
+
 
 public class Main 
 {
 	public static void main(String[] args) 
     {
-        /* Valido los parametros */
-        if (!validate_parameters(args)) {
+        
+        if (!validate_parameters(args)) 
+        {
             return;
         }
-        /* asigno variables */
+        
 		int total_threads = Integer.parseInt(args[1]);
         String file_path = args[0];
 
-        /* Leo el archivo de entrada y relleno las lineas */
+        
         List<String> lines = new ArrayList<>();
         read_file(file_path, lines);
 
-        /* Ejecucion del conteo y toma de tiempo */
+        
         long t1 = System.currentTimeMillis();
         int rt = execute_counter(lines, total_threads);
         long t2 = System.currentTimeMillis();
@@ -47,9 +48,11 @@ public class Main
         }
         
         int total_threads;
-        try{
+        try
+        {
             total_threads = Integer.parseInt(parameters[1]);
-        } catch (NumberFormatException e) 
+        } 
+        catch (NumberFormatException e) 
         {
             System.out.println("El 2do parametro tiene que ser un numero.");
             return false;
@@ -86,7 +89,8 @@ public class Main
 		} catch( Exception e)
         {
 			e.printStackTrace();
-		} finally 
+		} 
+        finally 
         {
 			sc.close();
 		}
@@ -96,7 +100,7 @@ public class Main
         
         int total_lines = lines.size();
 
-        /* Si la cantidad de hilos es mayor que la cantidad de lineas del archivo, entonces limito los hilos a la cantidad de lineas */
+        
         if (total_threads > total_lines) 
         {   
             total_threads = total_lines;
@@ -118,19 +122,20 @@ public class Main
             System.out.println("Hilo: " + i + " ejecutando: " + start + " hasta " + end);
 		}
 
-        /* Libero recursos de los hilos */
+        
         try
         {
             for (int i = 0; i < total_threads; i++) 
             {
                 threads[i].join();
             }
-        } catch (InterruptedException e) 
+        } 
+        catch (InterruptedException e) 
         {
             e.printStackTrace();
         }
         
-        /* Conteo final */
+        
         int rt = 0;
         for (CharacterCounter counter : counters) 
         {

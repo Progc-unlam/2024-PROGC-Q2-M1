@@ -16,7 +16,8 @@ public class MainProcess
 	    if (args.length == 0) 
 		{
 	    	processName = "A";
-	    } else 
+	    } 
+		else 
 		{
 	    	processName = args[0];
 	    }
@@ -48,11 +49,12 @@ public class MainProcess
 	    	childs.add(createProcess("G"));
 	    } 
 	
-		/* Duerme todos los procesos */
+		
 	    Thread.sleep(TIME_VERIFICATION);	
 		
-	    /* El proceso solo continua si el proceso hijo termina */
-	    for(Process child : childs) {
+	    
+	    for(Process child : childs) 
+		{
 	    	child.waitFor();  
 
 	    }

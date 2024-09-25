@@ -3,11 +3,11 @@ import java.util.Scanner;
 
 public class Main 
 {
-    /* Constantes */
+    
     private static final String MAN = "H";
     private static final String WOMAN = "M";
 
-    /* Variables comunes - no es necesario sincronizar, ya que los hilos no lo tocan */
+    
     public static int access_counter = 1;
     public static void main(String[] args) 
     {
@@ -28,15 +28,18 @@ public class Main
                 Thread man_access = new Thread(new Bath(MAN, i));
                 man_access.start();
                 i++;
-            } else if (input.equals(WOMAN)) 
+            } 
+            else if (input.equals(WOMAN)) 
             {
                 Thread woman_access = new Thread(new Bath(WOMAN, i));
                 woman_access.start();
                 i++;
-            } else if (input.equals("salir")) 
+            } 
+            else if (input.equals("salir")) 
             {
                 break;
-            } else 
+            } 
+            else 
             {
                 System.out.println("Entrada no valida.");
             }
@@ -45,7 +48,7 @@ public class Main
         scanner.close();
     }
 
-    /* Este seria el recurso compartido */
+    
     public static synchronized void update_screen()
     {
         int counter = 0;
