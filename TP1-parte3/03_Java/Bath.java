@@ -3,18 +3,18 @@ import java.util.concurrent.Semaphore;
 public class Bath implements Runnable 
 {
     /* Constantes */
-    private static final int TIME_IN_BATH = 3000;
+    private static final int TIME_IN_BATH = 5000;
     private static final int TIME_WAITING = 3000;
-    private static final int BATH_CAPACITY = 2;
+    private static final int BATH_CAPACITY = 5;
     private static final String MAN = "H";
     private static final String WOMAN = "M";
 
 
-    
+    /* Variables propias de cada persona */
     private String gender;
     private int number;
 
-    
+    /* Recursos compartidos */
     public static int women_counter = 0;
     public static int men_counter = 0;
     public static Semaphore sem_access_bath = new Semaphore(BATH_CAPACITY);
