@@ -1,7 +1,11 @@
 import os
 import requests
+import sys
 from bs4 import BeautifulSoup
 import re
+
+
+# download_info: lista con materia, nombre de archivo y link de descarga
 
 session = requests.Session()
 
@@ -9,10 +13,15 @@ session = requests.Session()
 login_url = 'https://miel.unlam.edu.ar/principal/event/login/'
 contents_url = 'https://miel.unlam.edu.ar/principal/interno/'
 base_directory = os.path.dirname(os.path.abspath(__file__))
-base_path = os.path.join(base_directory, "pdfs")
+base_path = os.path.join(base_directory, "archivos_miel")
+
+if len(sys.argv) != 3:
+    print("Error, cantidad de argumentos invalido")
+    exit(1)
+
 credentials = {
-    'usuario': '111222333444',
-    'clave': '111222333444'
+    'usuario': sys.argv[1],
+    'clave': sys.argv[2]
 }
 absolute_path = os.path.abspath(base_path)
 print(f"Los archivos se guardarán en: {absolute_path}")
@@ -51,7 +60,8 @@ print("Acceso a la pagina de contenidos exitoso")
 
 subject_links = contents_soup.find_all('div', class_="materia-bloque")
 
-# accedo a cada bloque de materia               //// TODO: hilos o procesos por cada uno, todo lo de abajo a una funcion y le mandamos los hilos a ejecutar
+download_info = []
+# accedo a cada bloque de materia
 for subject in subject_links:  # archivos de principal/interno
 
     subject_title = subject.find(
@@ -98,7 +108,7 @@ for subject in subject_links:  # archivos de principal/interno
                 os.makedirs(unit_path)
 
             pdf_links = table.find_all('a', href=True)
-            for link in pdf_links:  # busco los .pdf de contenido // posiblemente hago lo mismo que arriba y obtengo el div para sacar el titulo y crear la carpeta
+            for link in pdf_links:
                 href = link['href']
 
                 if "descargarElemento" in href:
@@ -109,9 +119,10 @@ for subject in subject_links:  # archivos de principal/interno
                         # usan 5C como prefijo
                         file_name = os.path.basename(
                             href.split('/')[-3])
-
                         # TODO: hay otros caracteres raros aparte del 5C_
                         file_name = file_name.split('5C_', 1)[-1]
+
+                        download_info.append((subject_title, file_name, href))
 
                         file_path = os.path.join(unit_path, file_name)
                         with open(file_path, 'wb') as pdf_file:
@@ -120,4 +131,4 @@ for subject in subject_links:  # archivos de principal/interno
                                 f"Archivo {file_name} descargado en {file_path}.")
                     else:
                         print(
-                            f"Error al descargar el archivo")
+                            f"Error al descargar el archivo {href}")
