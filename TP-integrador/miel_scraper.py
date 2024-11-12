@@ -12,7 +12,7 @@ class MielScraper:
     LOGIN_URL = 'https://miel.unlam.edu.ar/principal/event/login/'
     DIRNAME = 'archivos_miel'
 
-    def init(self, user, password):
+    def __init__(self, user, password):
         self.session = requests.Session()
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
         self.base_path = os.path.join(self.base_directory, self.DIRNAME)
@@ -21,6 +21,7 @@ class MielScraper:
             'usuario': user,
             'clave': password
         }
+        print(f"Los archivos se guardarán en: {absolute_path}")
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
 
@@ -76,9 +77,9 @@ class MielScraper:
             modules = subject_soup.find_all('div', class_="desplegarModulo")
 
             for module in modules:
-                module_tittle = module.find('span').get_text(strip=True)
+                module_title = module.find('span').get_text(strip=True)
 
-                module_path = os.path.join(subject_path, module_tittle)
+                module_path = os.path.join(subject_path, module_title)
                 if not os.path.exists(module_path):
                     os.makedirs(module_path)
 
@@ -89,41 +90,43 @@ class MielScraper:
 
                 # accedo a las unidades de cada modulo
                 for table in unit_table:
-                    unit_tittle = table.find(
-                        'th', colspan="2").contents[0].get_text(strip=True)  # contents[0] porque no hay un span en el encabezado, y el get_text te trae todo incluyendo lo que idce en el <o> y <div> interno
-                    # le saco los caracteres basura para crear la carpeta
-                    unit_tittle = re.sub(r'[<>:"/\\|?*]', '_', unit_tittle)
+                    if table.find('th', colspan="2"):
+                        unit_title = table.find(
+                            'th', colspan="2").contents[0].get_text(strip=True)  # contents[0] porque no hay un span en el encabezado, y el get_text te trae todo incluyendo lo que idce en el <o> y <div> interno
+                        # le saco los caracteres basura para crear la carpeta
+                        unit_title = re.sub(r'[<>:"/\\|?*]', '_', unit_title)
 
-                    unit_path = os.path.join(
-                        module_path, unit_tittle.replace(' ', '_'))
+                        unit_path = os.path.join(
+                            module_path, unit_title.replace(' ', '_'))
 
-                    if not os.path.exists(unit_path):
-                        os.makedirs(unit_path)
+                        if not os.path.exists(unit_path):
+                            os.makedirs(unit_path)
 
-                    pdf_links = table.find_all('a', href=True)
-                    for link in pdf_links:
-                        href = link['href']
+                        pdf_links = table.find_all('a', href=True)
+                        for link in pdf_links:
+                            href = link['href']
 
-                        if "descargarElemento" in href:
-                            print(f"Descargando {href}...")
+                            if "descargarElemento" in href:
+                                print(f"Descargando {href}...")
 
-                            pdf_response = self.session.get(
-                                href)  # descargo pdf
-                            if pdf_response.status_code == 200:
-                                # usan 5C como prefijo
-                                file_name = os.path.basename(
-                                    href.split('/')[-3])
-                                # TODO: hay otros caracteres raros aparte del 5C_
-                                file_name = file_name.split('5C_', 1)[-1]
+                                pdf_response = self.session.get(
+                                    href)  # descargo pdf
+                                if pdf_response.status_code == 200:
+                                    # usan 5C como prefijo
+                                    file_name = os.path.basename(
+                                        href.split('/')[-3])
+                                    # TODO: hay otros caracteres raros aparte del 5C_
+                                    file_name = file_name.split('5C_', 1)[-1]
 
-                                download_info.append(
-                                    (subject_title, file_name, href))
+                                    download_info.append(
+                                        (subject_title, file_name, href))
 
-                                file_path = os.path.join(unit_path, file_name)
-                                with open(file_path, 'wb') as pdf_file:
-                                    pdf_file.write(pdf_response.content)
+                                    file_path = os.path.join(
+                                        unit_path, file_name)
+                                    with open(file_path, 'wb') as pdf_file:
+                                        pdf_file.write(pdf_response.content)
+                                        print(
+                                            f"Archivo {file_name} descargado en {file_path}.")
+                                else:
                                     print(
-                                        f"Archivo {file_name} descargado en {file_path}.")
-                            else:
-                                print(
-                                    f"Error al descargar el archivo {href}")
+                                        f"Error al descargar el archivo {href}")
