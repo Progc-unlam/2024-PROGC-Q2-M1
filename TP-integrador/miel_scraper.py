@@ -4,6 +4,7 @@ import sys
 
 import requests
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 class MielScraper:
@@ -38,7 +39,7 @@ class MielScraper:
             print(
                 f"Error al hacer la solicitud de inicio de sesión: {login_response.status_code}")
             return False
-        
+
         return True
 
     def get_files_to_download(self):
@@ -46,18 +47,23 @@ class MielScraper:
         self._get_file_links()
 
     def download_files(self):
-        for file in self.file_info:
-            pdf_response = self.session.get(file['url'])  # descargo pdf
-            if pdf_response.status_code == 200:
-                # usan 5C como prefijo
+        with ProcessPoolExecutor() as executor:
+            for file in self.file_info:
+                executor.submit(self._download_file, file)
 
-                with open(file['path'], 'wb') as pdf_file:
-                    pdf_file.write(pdf_response.content)
-                    print(
-                        f"Archivo descargado en {file['path']}.")
-            else:
+    def _download_file(self, file):
+        pdf_response = self.session.get(file['url'])  # descargo pdf
+        if pdf_response.status_code == 200:
+            # usan 5C como prefijo
+            with open(file['path'], 'wb') as pdf_file:
+                pdf_file.write(pdf_response.content)
                 print(
-                    f"Error al descargar el archivo {file['url']}")
+                    f"Archivo descargado en {file['path']}.")
+
+            file['downloaded'] = True
+        else:
+            print(
+                f"Error al descargar el archivo {file['url']}")
 
     def _get_subject_links(self):
         contents_response = self.session.get(self.CONTENTS_URL)
@@ -136,5 +142,6 @@ class MielScraper:
                                 self.file_info.append({
                                     "subject": subject_title,
                                     "path": file_path,
-                                    "url": href
+                                    "url": href,
+                                    "downloaded": False
                                 })
