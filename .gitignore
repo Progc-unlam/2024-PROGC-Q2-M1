@@ -34,3 +34,10 @@
 
 # Excluse .vscode
 *.vscode
+
+# Python
+.venv
+__pycache__
+
+# TP-integrador
+archivos_miel
