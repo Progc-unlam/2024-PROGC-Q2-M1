@@ -12,22 +12,22 @@ class MielScraper:
     LOGIN_URL = 'https://miel.unlam.edu.ar/principal/event/login/'
     DIRNAME = 'archivos_miel'
 
-    def __init__(self, user, password):
+    def __init__(self):
         self.session = requests.Session()
         self.base_directory = os.path.dirname(os.path.abspath(__file__))
         self.base_path = os.path.join(self.base_directory, self.DIRNAME)
         absolute_path = os.path.abspath(self.base_path)
-        self.credentials = {
-            'usuario': user,
-            'clave': password
-        }
         print(f"Los archivos se guardarán en: {absolute_path}")
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
 
-    def login(self):
+    def login(self, user, password):
+        credentials = {
+            'usuario': user,
+            'clave': password
+        }
         login_response = self.session.post(
-            self.LOGIN_URL, data=self.credentials)
+            self.LOGIN_URL, data=credentials)
         if login_response.status_code != 200:
             print("Error al iniciar sesion")
             exit()
@@ -39,7 +39,27 @@ class MielScraper:
                 f"Error al hacer la solicitud de inicio de sesión: {login_response.status_code}")
             exit()
 
-    def get_subject_links(self):
+    def get_files_to_download(self):
+        self._get_subject_links()
+        self._get_file_links()
+
+    def download_files(self):
+        for file in self.file_info:
+            href = file[2]
+            file_path = file[1]
+            pdf_response = self.session.get(href)  # descargo pdf
+            if pdf_response.status_code == 200:
+                # usan 5C como prefijo
+
+                with open(file_path, 'wb') as pdf_file:
+                    pdf_file.write(pdf_response.content)
+                    print(
+                        f"Archivo descargado en {file_path}.")
+            else:
+                print(
+                    f"Error al descargar el archivo {href}")
+
+    def _get_subject_links(self):
         contents_response = self.session.get(self.CONTENTS_URL)
         if contents_response.status_code != 200:
             print(
@@ -52,8 +72,8 @@ class MielScraper:
         self.subject_links = contents_soup.find_all(
             'div', class_="materia-bloque")
 
-    def download_files(self):
-        download_info = []
+    def _get_file_links(self):
+        self.file_info = []
         # accedo a cada bloque de materia
         for subject in self.subject_links:  # archivos de principal/interno
 
@@ -107,26 +127,11 @@ class MielScraper:
                             href = link['href']
 
                             if "descargarElemento" in href:
-                                print(f"Descargando {href}...")
-
-                                pdf_response = self.session.get(
-                                    href)  # descargo pdf
-                                if pdf_response.status_code == 200:
-                                    # usan 5C como prefijo
-                                    file_name = os.path.basename(
-                                        href.split('/')[-3])
-                                    # TODO: hay otros caracteres raros aparte del 5C_
-                                    file_name = file_name.split('5C_', 1)[-1]
-
-                                    download_info.append(
-                                        (subject_title, file_name, href))
-
-                                    file_path = os.path.join(
-                                        unit_path, file_name)
-                                    with open(file_path, 'wb') as pdf_file:
-                                        pdf_file.write(pdf_response.content)
-                                        print(
-                                            f"Archivo {file_name} descargado en {file_path}.")
-                                else:
-                                    print(
-                                        f"Error al descargar el archivo {href}")
+                                file_name = os.path.basename(
+                                    href.split('/')[-3])
+                                # TODO: hay otros caracteres raros aparte del 5C_
+                                file_name = file_name.split('5C_', 1)[-1]
+                                file_path = os.path.join(
+                                    unit_path, file_name)
+                                self.file_info.append(
+                                    (subject_title, file_path, href))

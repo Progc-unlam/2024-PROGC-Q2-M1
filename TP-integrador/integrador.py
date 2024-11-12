@@ -5,8 +5,8 @@ if len(sys.argv) != 3:
     print("Error, cantidad de argumentos invalido")
     exit(1)
 
-ms = MielScraper(sys.argv[1], sys.argv[2])
+ms = MielScraper()
 
-ms.login()
-ms.get_subject_links()
+ms.login(sys.argv[1], sys.argv[2])
+ms.get_files_to_download()
 ms.download_files()
