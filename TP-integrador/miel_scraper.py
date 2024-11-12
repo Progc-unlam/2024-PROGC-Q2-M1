@@ -30,14 +30,16 @@ class MielScraper:
             self.LOGIN_URL, data=credentials)
         if login_response.status_code != 200:
             print("Error al iniciar sesion")
-            exit()
+            return False
 
         login_response_json = login_response.json()
 
         if login_response_json.get("estado") != 0:
             print(
                 f"Error al hacer la solicitud de inicio de sesión: {login_response.status_code}")
-            exit()
+            return False
+        
+        return True
 
     def get_files_to_download(self):
         self._get_subject_links()
