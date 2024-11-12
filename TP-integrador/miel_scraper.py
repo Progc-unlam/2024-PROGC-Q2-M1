@@ -45,19 +45,17 @@ class MielScraper:
 
     def download_files(self):
         for file in self.file_info:
-            href = file[2]
-            file_path = file[1]
-            pdf_response = self.session.get(href)  # descargo pdf
+            pdf_response = self.session.get(file['url'])  # descargo pdf
             if pdf_response.status_code == 200:
                 # usan 5C como prefijo
 
-                with open(file_path, 'wb') as pdf_file:
+                with open(file['path'], 'wb') as pdf_file:
                     pdf_file.write(pdf_response.content)
                     print(
-                        f"Archivo descargado en {file_path}.")
+                        f"Archivo descargado en {file['path']}.")
             else:
                 print(
-                    f"Error al descargar el archivo {href}")
+                    f"Error al descargar el archivo {file['url']}")
 
     def _get_subject_links(self):
         contents_response = self.session.get(self.CONTENTS_URL)
@@ -133,5 +131,8 @@ class MielScraper:
                                 file_name = file_name.split('5C_', 1)[-1]
                                 file_path = os.path.join(
                                     unit_path, file_name)
-                                self.file_info.append(
-                                    (subject_title, file_path, href))
+                                self.file_info.append({
+                                    "subject": subject_title,
+                                    "path": file_path,
+                                    "url": href
+                                })
