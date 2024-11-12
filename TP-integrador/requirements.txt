@@ -1,5 +1,4 @@
 pygame
 pygame-menu
-threading
 requests
 bs4

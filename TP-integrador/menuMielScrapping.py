@@ -1,12 +1,16 @@
+from pickle import TRUE
 import pygame
 import pygame_menu
 import pygame_menu.events
 import threading
-from menuScrollBar import on_button_click
+#from menuScrollBar import on_button_click
+from miel_scraper import MielScraper
 
 import time
 
 from typing import Tuple,Any
+
+from miel_scraper import MielScraper
 
 FPS = 60
 WINDOW_WIDTH_PYGAME = 800
@@ -31,7 +35,8 @@ def simulate_scraping():
 
 class MenuScraping:
     def __init__(self):
-        pass
+        self.ms = MielScraper()
+        
     
     def main(self) -> None:
         #screen = create_example_window('Example - Scrolling Menu', WINDOW_SIZE)
@@ -64,11 +69,8 @@ class MenuScraping:
             username = text_input_user.get_value()
             password = text_input_pass.get_value()
 
-            # Lógica de validación de credenciales
-            valid_user = "admin"  # Usuario de ejemplo
-            valid_pass = "1234"   # Contraseña de ejemplo
-
-            if username == valid_user and password == valid_pass:
+            if self.ms.login(username,password):
+            #if self.ms.login(username,password):
                 # Si las credenciales son correctas, pasa a la pantalla de carga
                 self.menu = self.loading_screen(pygame.display.set_mode(WINDOW_SIZE))
                 #return loading_screen(pygame.display.set_mode(WINDOW_SIZE))
@@ -141,8 +143,8 @@ class MenuScraping:
         )
         #crear lista de examples
         thislist = ["apple", "banana", "cherry"]
-        for i in thislist:
-            menu.add.button(i,on_button_click,f'Button n°{i}')
+        #for i in thislist:
+            ##menu.add.button(i,on_button_click,f'Button n°{i}')
         menu.add.button('Exit', pygame_menu.events.EXIT)
         return menu
 
@@ -179,14 +181,17 @@ class MenuScraping:
         increment = 1  # Aumentamos un 1% por ciclo de actualización
 
         # Llamamos al hilo de scraping
-        threading.Thread(target=simulate_scraping, daemon=True).start()
+        self.ms.get_files_to_download()
+        hilito1 = threading.Thread(target=self.ms.download_files, daemon=True)
+        #hilito1 = threading.Thread(target=simulate_scraping, daemon=True)
+        hilito1.start()
 
         # Mantener la pantalla de carga visible hasta que scraping_done sea True
-        while not scraping_done:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return
+        while not progress==99:
+            # for event in pygame.event.get():
+            #     if event.type == pygame.QUIT:
+            #         pygame.quit()
+            #         return
 
             # Limpiar pantalla
             screen.fill((0, 0, 0))
@@ -215,6 +220,8 @@ class MenuScraping:
 
         # Una vez que el scraping haya terminado, mostrar el menú con los datos obtenidos
         # Cuando scraping_done sea True, ponemos el progreso al 100%
+        
+        hilito1.join()
         progress = 100
         pygame.draw.rect(screen, (200, 200, 200), progress_rect)  # Fondo de la barra
         pygame.draw.rect(screen, (0, 255, 0), (progress_rect.x, progress_rect.y, progress * 4, progress_bar_height))  # Progreso
