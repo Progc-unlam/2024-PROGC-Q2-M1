@@ -61,8 +61,6 @@ class MielScraper:
         file['downloaded'] = True
         self.sem.release()
 
-        print(
-            f"Archivo   {file}.")
         pdf_response = self.session.get(file['url'])
         if pdf_response.status_code == 200:
             with open(file['path'], 'wb') as pdf_file:
@@ -95,6 +93,7 @@ class MielScraper:
             subject_title = subject.find(
                 'div', class_="materia-titulo").get_text(strip=True)
             # creo la carpeta por cada materia
+            subject_title = re.sub(r'[<>:"/\\|?*]', '_', subject_title)
             subject_path = os.path.join(self.base_path, subject_title)
             if not os.path.exists(subject_path):
                 os.makedirs(subject_path)
