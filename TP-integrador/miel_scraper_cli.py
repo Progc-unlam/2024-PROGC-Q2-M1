@@ -2,7 +2,7 @@ import sys
 from miel_scraper import MielScraper
 
 if len(sys.argv) != 3:
-    print("Error, cantidad de argumentos invalido")
+    print("Uso: python3 miel_scraper_cli.py <usuario> <contraseña>")
     exit(1)
 
 ms = MielScraper()

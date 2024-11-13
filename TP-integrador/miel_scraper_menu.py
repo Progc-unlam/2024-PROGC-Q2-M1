@@ -1,10 +1,10 @@
+import threading
+import time
+
 import pygame
 import pygame_menu
 import pygame_menu.events
-import threading
 from miel_scraper import MielScraper
-import time
-from typing import Tuple, Any
 
 FPS = 60
 WINDOW_WIDTH_PYGAME = 800
@@ -28,11 +28,9 @@ class MenuScraping:
         self.screen = pygame.display.set_mode(WINDOW_SIZE)
         self.menu = self.make_login_menu()
         clock = pygame.time.Clock()
-
         clock.tick(FPS)
         self.menu.mainloop(
             surface=self.screen,
-            # bgfun=make_main_menu,
             disable_loop=False,
             fps_limit=FPS,
         )
@@ -40,31 +38,30 @@ class MenuScraping:
     def make_login_menu(self) -> 'pygame_menu.Menu':
         theme_menu = pygame_menu.themes.THEME_BLUE.copy()
         theme_menu.scrollbar_cursor = pygame_menu.locals.CURSOR_HAND
-
         self.menu = pygame_menu.Menu(
             height=WINDOW_HEIGHT_PYGAME,
             width=WINDOW_WIDTH_PYGAME,
             theme=theme_menu,
             title='Iniciar sesión'
         )
-
         self.text_input_user = self.menu.add.text_input(
             'Usuario: ', default='', maxchar=30)
         self.text_input_pass = self.menu.add.text_input(
             'Contraseña: ', default='', maxchar=30, password=True)
         self.menu.add.button('Iniciar sesión', self.on_login)
         self.menu.add.button('Salir', pygame_menu.events.EXIT)
+
         return self.menu
 
     def on_login(self):
         username = self.text_input_user.get_value()
         password = self.text_input_pass.get_value()
-
         if self.ms.login(username, password):
             self.loading_screen(pygame.display.set_mode(WINDOW_SIZE))
         else:
             if self.label_error:
                 self.menu.remove_widget(self.label_error)
+
             self.label_error = self.menu.add.label(
                 "Credenciales incorrectas, intenta nuevamente.")
             self.label_error.set_background_color(color=(255, 0, 0))
@@ -92,12 +89,13 @@ class MenuScraping:
         downLoadThread = threading.Thread(
             target=self.ms.download_files, daemon=True)
         downLoadThread.start()
-
         while not progress == 99:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+
                     return
+
             screen.fill((0, 0, 0))
             screen.blit(image, image_rect)
             screen.blit(loading_text, loading_rect)
