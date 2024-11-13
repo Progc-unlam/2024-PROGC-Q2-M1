@@ -1,6 +1,7 @@
 import os
 import re
-import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Semaphore
 
 import requests
 from bs4 import BeautifulSoup
@@ -30,34 +31,41 @@ class MielScraper:
             self.LOGIN_URL, data=credentials)
         if login_response.status_code != 200:
             print("Error al iniciar sesion")
-            exit()
+            return False
 
         login_response_json = login_response.json()
-
         if login_response_json.get("estado") != 0:
             print(
                 f"Error al hacer la solicitud de inicio de sesión: {login_response.status_code}")
-            exit()
+            return False
+
+        return True
 
     def get_files_to_download(self):
         self._get_subject_links()
         self._get_file_links()
 
-    def download_files(self):
-        for file in self.file_info:
-            href = file[2]
-            file_path = file[1]
-            pdf_response = self.session.get(href)  # descargo pdf
-            if pdf_response.status_code == 200:
-                # usan 5C como prefijo
+    def get_file_info(self):
+        return self.file_info
 
-                with open(file_path, 'wb') as pdf_file:
-                    pdf_file.write(pdf_response.content)
-                    print(
-                        f"Archivo descargado en {file_path}.")
-            else:
-                print(
-                    f"Error al descargar el archivo {href}")
+    def download_files(self):
+        self.sem = Semaphore(1)
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            for _ in range(len(self.file_info)):
+                executor.submit(self._download_file)
+
+    def _download_file(self):
+        self.sem.acquire()
+        file = [file for file in self.file_info if not file['downloaded']][0]
+        file['downloaded'] = True
+        self.sem.release()
+        pdf_response = self.session.get(file['url'])
+        if pdf_response.status_code == 200:
+            with open(file['path'], 'wb') as pdf_file:
+                pdf_file.write(pdf_response.content)
+        else:
+            print(
+                f"Error al descargar el archivo {file['url']}")
 
     def _get_subject_links(self):
         contents_response = self.session.get(self.CONTENTS_URL)
@@ -68,37 +76,28 @@ class MielScraper:
 
         contents_soup = BeautifulSoup(
             contents_response.content, 'html.parser')
-        print("Acceso a la pagina de contenidos exitoso")
         self.subject_links = contents_soup.find_all(
             'div', class_="materia-bloque")
 
     def _get_file_links(self):
         self.file_info = []
-        # accedo a cada bloque de materia
-        for subject in self.subject_links:  # archivos de principal/interno
-
+        for subject in self.subject_links:
             subject_title = subject.find(
                 'div', class_="materia-titulo").get_text(strip=True)
-            # creo la carpeta por cada materia
+            subject_title = re.sub(r'[<>:"/\\|?*]', '_', subject_title)
             subject_path = os.path.join(self.base_path, subject_title)
             if not os.path.exists(subject_path):
                 os.makedirs(subject_path)
 
             subject_link = subject.find(
                 'a', href=True, class_="w3-col w3-padding-8 w3-center w3-hover-green w3-hover-text-white")
-
             href = subject_link['href']
-
-            # accedo a los modulos de la materia
             subject_response = self.session.get(href)
             subject_soup = BeautifulSoup(
                 subject_response.content, 'html.parser')
-
             modules = subject_soup.find_all('div', class_="desplegarModulo")
-
             for module in modules:
                 module_title = module.find('span').get_text(strip=True)
-
                 module_path = os.path.join(subject_path, module_title)
                 if not os.path.exists(module_path):
                     os.makedirs(module_path)
@@ -107,31 +106,28 @@ class MielScraper:
                     'div', class_='w3-accordion-content')
                 unit_table = unit_container.find_all(
                     'table', class_='w3-table')
-
-                # accedo a las unidades de cada modulo
                 for table in unit_table:
                     if table.find('th', colspan="2"):
                         unit_title = table.find(
-                            'th', colspan="2").contents[0].get_text(strip=True)  # contents[0] porque no hay un span en el encabezado, y el get_text te trae todo incluyendo lo que idce en el <o> y <div> interno
-                        # le saco los caracteres basura para crear la carpeta
+                            'th', colspan="2").contents[0].get_text(strip=True)
                         unit_title = re.sub(r'[<>:"/\\|?*]', '_', unit_title)
-
                         unit_path = os.path.join(
                             module_path, unit_title.replace(' ', '_'))
-
                         if not os.path.exists(unit_path):
                             os.makedirs(unit_path)
 
                         pdf_links = table.find_all('a', href=True)
                         for link in pdf_links:
                             href = link['href']
-
                             if "descargarElemento" in href:
                                 file_name = os.path.basename(
                                     href.split('/')[-3])
-                                # TODO: hay otros caracteres raros aparte del 5C_
                                 file_name = file_name.split('5C_', 1)[-1]
                                 file_path = os.path.join(
                                     unit_path, file_name)
-                                self.file_info.append(
-                                    (subject_title, file_path, href))
+                                self.file_info.append({
+                                    "subject": subject_title,
+                                    "path": file_path,
+                                    "url": href,
+                                    "downloaded": False
+                                })
