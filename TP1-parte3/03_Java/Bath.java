@@ -50,7 +50,8 @@ public class Bath implements Runnable
         }
     }
 
-    public void try_access_bath(){
+    public void try_access_bath()
+    {
         Main.waiting(gender, number);
         P("access_bath");
         try
