@@ -3,11 +3,9 @@ import java.util.Scanner;
 
 public class Main 
 {
-    /* Constantes */
     private static final String MAN = "H";
     private static final String WOMAN = "M";
 
-    /* Variables generales pero con unico acceso */
     public static int access_counter = 1;
     public static void main(String[] args) 
     {
