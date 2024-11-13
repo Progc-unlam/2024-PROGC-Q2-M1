@@ -59,6 +59,7 @@ class MielScraper:
         file = [file for file in self.file_info if not file['downloaded']][0]
         file['downloaded'] = True
         self.sem.release()
+        print(f"{file['path']}")
         pdf_response = self.session.get(file['url'])
         if pdf_response.status_code == 200:
             with open(file['path'], 'wb') as pdf_file:

@@ -107,7 +107,10 @@ class MenuScraping:
                         percentage_text.get_width() // 2, progress_rect.y + progress_bar_height + 10))
             pygame.display.flip()
             progress = min(progress + increment, 99)
-            time.sleep(0.05)
+            time.sleep(0.15)
+
+        while downLoadThread.is_alive():
+            print("Descargando")
 
         downLoadThread.join()
         progress = 100
@@ -124,7 +127,7 @@ class MenuScraping:
         image_rect = image.get_rect()
         screen.blit(image, image_rect)
         pygame.display.flip()
-        time.sleep(5)
+        time.sleep(2)
         exit()
 
 
