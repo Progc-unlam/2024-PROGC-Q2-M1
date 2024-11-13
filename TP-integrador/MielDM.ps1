@@ -7,4 +7,4 @@ if (Test-Path $envPath) {
     & "$envPath\Scripts\Activate.ps1"
     pip install -r requirements.txt
 }
-python .\menuMielScrapping.py
+python .\miel_scraper_menu.py
